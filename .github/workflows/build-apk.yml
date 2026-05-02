@@ -21,11 +21,11 @@ jobs:
     - name: Make Gradle executable
       run: chmod +x ./gradlew
 
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
-
+     run: ./gradlew build
     - name: Build Debug APK
       run: ./gradlew assembleDebug
+    - name: Generate version.txt for Hub release
+      run: ./gradlew generateVersionTx
 
 # مرحله آپلود APK به عنوان Artifact
     - name: Upload Debug APK
