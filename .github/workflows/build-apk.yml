@@ -1,7 +1,6 @@
 name: Build Android APK
 
 on:
-  # اجرای دستی (بهترین گزینه برای گرفتن خروجی)
   workflow_dispatch:
     inputs:
       build_type:
@@ -13,14 +12,13 @@ on:
           - release
           - debug
 
-  # (اختیاری) اجرا روی push به شاخه اصلی
-  push:
-    branches: [ main, master ]
-
 jobs:
   build:
     name: Build APK
     runs-on: ubuntu-latest
+    
+    # افزایش تایم‌اوت برای دانلود دپندنسی‌ها
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -30,26 +28,45 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'  # مهم: Java 17 برای Gradle 8 لازم است [citation:4][citation:5]
+          java-version: '17'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.22.0'  # نسخه خودتان را جایگزین کنید
+          flutter-version: '3.19.6'  # نسخه پایدار و تست شده
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Enable Flutter for current user
+        run: |
+          flutter doctor -v
+          flutter precache
 
-      - name: Clean previous build
-        run: flutter clean
+      - name: Clean everything
+        run: |
+          rm -rf ~/.pub-cache
+          rm -rf .dart_tool/
+          rm -rf build/
+          rm -f pubspec.lock
+          flutter clean
 
+      - name: Get dependencies fresh
+        run: |
+          flutter pub get --no-example
+          
+      - name: Verify dependencies
+        run: |
+          flutter pub deps
+          
       - name: Build APK
-        run: flutter build apk --${{ github.event.inputs.build_type || 'release' }}
+        run: |
+          flutter build apk --${{ github.event.inputs.build_type || 'release' }} --verbose
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ github.event.inputs.build_type || 'release' }}
-          path: build/app/outputs/flutter-apk/app-*.apk
+          name: app-${{ github.event.inputs.build_type || 'release' }}-${{ github.run_number }}
+          path: |
+            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/apk/**/*.apk
+          if-no-files-found: error
           retention-days: 30
