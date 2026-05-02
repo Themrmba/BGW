@@ -21,8 +21,8 @@ jobs:
     - name: Make Gradle executable
       run: chmod +x ./gradlew
 
-    - name: Build with Gradle (clean build)
-      run: ./gradlew clean build # اضافه کردن clean برای اطمینان از build تمیز
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
 
     - name: Build Debug APK
       run: ./gradlew assembleDebug
