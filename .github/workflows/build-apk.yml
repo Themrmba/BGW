@@ -23,7 +23,7 @@ jobs:
     - name: Generate version.txt for Hub release
       run: ./gradlew generateVersionTxt
     - name: Releasing using Hub
-      uses: valley-fordham/action-release-debugapk@main
+      uses:  uses: actions/upload-artifact3
       env:
        GITHUB_TOKEN: ${{ secrets.TOKEN }}
        APP_FOLDER: app
